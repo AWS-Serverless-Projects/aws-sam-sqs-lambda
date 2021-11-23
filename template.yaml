@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-sqs-lambda
+
+  Sample SAM Template for sam-sqs-lambda
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello_world/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Events:
+        HelloWorld:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SqsQueue.Arn
+            BatchSize: 10
+            Enabled: true
+
+  SqsQueue:
+    Type: AWS::SQS::Queue
+
+Outputs:
+  SQSQueue:
+    Description: "Queue"
+    Value: !GetAtt SqsQueue.Arn
+  SQSQueueUrl:
+    Description: "Queue Url"
+    Value: !Sub 
+      - "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${QueueName}"
+      - { QueueName: !GetAtt SqsQueue.QueueName }
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
